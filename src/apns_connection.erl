@@ -283,11 +283,21 @@ do_build_payload([], Payload) ->
 send_payload(Socket, MsgId, Expiry, BinToken, Payload) ->
     BinPayload = list_to_binary(Payload),
     PayloadLength = erlang:size(BinPayload),
-    Packet = [<<1:8, MsgId/binary, Expiry:4/big-unsigned-integer-unit:8,
-                32:16/big,
-                BinToken/binary,
-                PayloadLength:16/big,
-                BinPayload/binary>>],
+    %Packet = [<<1:8, MsgId/binary, Expiry:4/big-unsigned-integer-unit:8,
+    %            32:16/big,
+    %            BinToken/binary,
+    %            PayloadLength:16/big,
+    %            BinPayload/binary>>],
+    %% Latest binary interface and notification format
+    ItemToken = <<1:8, 32:16/big, BinToken/binary>>,
+    PayloadToken = <<2:8, PayloadLength:16/big, BinPayload/binary>>,
+    MsgIdToken = <<3:8, 4:16/big, MsgId/binary>>,
+    ExpirationDateToken = <<4:8, 4:16/big, Expiry:4/big-unsigned-integer-unit:8>>,
+    PrioiryToken = <<5:8, 1:16/big, 10:8>>,
+    FrameData = << ItemToken/binary, PayloadToken/binary, MsgIdToken/binary, ExpirationDateToken/binary, PriorityToken/binary >>,
+    FrameLength = erlang:size(FrameData),
+    Packet = <<2:8, FrameLength:32/big, FrameData/binary>>,
+    
     error_logger:info_msg("Sending msg ~p (expires on ~p)~n",
                          [MsgId, Expiry]),
     ssl:send(Socket, Packet).
