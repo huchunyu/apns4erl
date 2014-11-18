@@ -293,7 +293,7 @@ send_payload(Socket, MsgId, Expiry, BinToken, Payload) ->
     PayloadToken = <<2:8, PayloadLength:16/big, BinPayload/binary>>,
     MsgIdToken = <<3:8, 4:16/big, MsgId/binary>>,
     ExpirationDateToken = <<4:8, 4:16/big, Expiry:4/big-unsigned-integer-unit:8>>,
-    PrioiryToken = <<5:8, 1:16/big, 10:8>>,
+    PriorityToken = <<5:8, 1:16/big, 10:8>>,
     FrameData = << ItemToken/binary, PayloadToken/binary, MsgIdToken/binary, ExpirationDateToken/binary, PriorityToken/binary >>,
     FrameLength = erlang:size(FrameData),
     Packet = <<2:8, FrameLength:32/big, FrameData/binary>>,
